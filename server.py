@@ -2,6 +2,7 @@ from model import SegregationModel
 from mesa.visualization.modules import CanvasGrid
 from mesa.visualization.ModularVisualization import ModularServer
 from mesa.visualization.UserParam import Slider
+from mesa.visualization.modules import ChartModule
 
 
 def agent_portrayal(agent):
@@ -10,30 +11,37 @@ def agent_portrayal(agent):
                  "Layer": 0,
                  "Color": agent.color,
                  "tooltip": f"{agent.ba}",
-                 "r": 0.5}
+                 "r": 1}
     return portrayal
 
 
 width, height, canvasWidth, canvasHeight = 50, 50, 500, 500
 grid = CanvasGrid(agent_portrayal, width, height, canvasWidth, canvasHeight)
 
+bChart = ChartModule(
+    [{"Label": "redAvgNeighbours", "Color": "red"},
+     {"Label": "blueAvgNeighbours", "Color": "blue"}]
+)
+
 server = ModularServer(
     SegregationModel,
-    [grid],
+    [grid, bChart],
     "Segregation Model",
     {
         "width": width,
         "height": height,
         "N": Slider("Agents", 10, 10, width*height, 50),
         "pRed": Slider("Amount of red agents (percent)", 0.5, 0, 1, 0.1),
-        "ba": Slider("BA", 0.5, 0, 1, 0.1)
+        "baRed": Slider("Red Tolerance (0 is the most tolerance)", 0.5, 0, 1, 0.1),
+        "baBlue": Slider("Blue Tolerance (0 is the most tolerance)", 0.5, 0, 1, 0.1),
+        "seed": Slider("Random Seed", 42, 0, 600, 1)
     }
 )
 
 
-def resetServerParams(server):
-    grid_width = server.parameter_values["width"]
-    grid_height = server.parameter_values["height"]
+def resetServerParams(serv):
+    grid_width = serv.parameter_values["width"]
+    grid_height = serv.parameter_values["height"]
     grid.width = grid_width
     grid.height = grid_height
     grid.portrayal_method = agent_portrayal
